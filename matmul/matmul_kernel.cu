@@ -56,17 +56,21 @@ torch::Tensor matmul(torch::Tensor& A, torch::Tensor& B) {
     int32_t n = B.size(1);
     assert(k == static_cast<int>(B.size(0)) && "Inner dimiension mismatch.");
 
+    torch::ScalarType dtype = A.scalar_type();
+    assert(B.scalar_type() == dtype &&
+           "Input tensors must have the same dtype.");
+
     torch::Tensor C = torch::zeros(
-        {m, n},
-        torch::TensorOptions().device(torch::kCUDA).dtype(torch::kFloat32));
+        {m, n}, torch::TensorOptions().device(torch::kCUDA).dtype(dtype));
 
     constexpr int32_t TILE_WIDTH = 16;
     dim3 block(TILE_WIDTH, TILE_WIDTH);
     dim3 grid((m - 1) / TILE_WIDTH + 1, (n - 1) / TILE_WIDTH + 1);
 
     const at::cuda::CUDAStream stream = at::cuda::getCurrentCUDAStream();
-    matmul_kernel<float, TILE_WIDTH><<<grid, block, 0, stream>>>(
-        A.data_ptr<float>(), B.data_ptr<float>(), C.data_ptr<float>(), m, n, k);
+    matmul_kernel<scalar_t, TILE_WIDTH><<<grid, block, 0, stream>>>(
+        A.data_ptr<scalar_t>(), B.data_ptr<scalar_t>(), C.data_ptr<scalar_t>(),
+        m, n, k);
 
     C10_CUDA_KERNEL_LAUNCH_CHECK();
     return C;

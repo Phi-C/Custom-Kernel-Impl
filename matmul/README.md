@@ -8,14 +8,22 @@ torch::Tensor matmul(torch::Tensor& a, torch::Tensor& b);
 * 返回值: 矩阵乘法的结果
 
 # 功能
-实现矩阵乘法$C=AB$.
+实现矩阵乘法:
+$$C=AB$$.
+
+目前支持的数据类型:
+|A|B|C|
+|---|---|---|
+|float|float|float|
 
 # 实现细节
 ## shared memory and tiling
 * 动机: shared memory是on-chip memory, 访问速度比global memory快. GPU Kernel优化的一个要点就是要充分利用shared memory, 减少对全局内存的访问次数。
 * 数学基础: 分块矩阵乘法
 * 映射关系: one tile ---> one thread block
+
 ![分块矩阵乘法和基于tile的实现](../figures/matmul.png)
+
 ![2D thread grids and blocks organization](../figures/2d_thread_grids.png)
 
 Q: 一个tile的height和weidth应该如何确定?
