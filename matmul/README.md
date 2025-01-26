@@ -27,6 +27,7 @@ $$C=AB$$.
 ![2D thread grids and blocks organization](../figures/2d_thread_grids.png)
 
 Q: 一个tile的height和weidth应该如何确定?
+
 A: 通常需要结合具体的硬件架构进行考虑, 考虑的因素主要有:
 1. shared memory的大小: 通常在几十KB和几百KB之间(每个SM)
 2. 线程块的大小: 每个线程块的最大线程数通常是1024
