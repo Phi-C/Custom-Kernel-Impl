@@ -23,7 +23,6 @@ __device__ void blockcompute(float* output, float& max_val, float& dom_val) {
     int32_t tid = threadIdx.x;
     int32_t lane = threadIdx.x % 32; // 32 is warp size
     int32_t wid = threadIdx.x / 32;
-    int32_t thres_tid = blockDim.x / 32 * 32;
 
     float warp_max = warpReduceMax(max_val);
     float warp_dom = warpReduceSum(dom_val * exp(max_val - warp_max));
@@ -62,19 +61,6 @@ __global__ void online_softmax(const dtype* input, dtype* output,
         }
         __syncthreads();
 
-        // Pass 1: Find the maximum value and the dominator value
-        // float max_val = input[i * n + tid];
-        // float dom_val = 0.0;
-        // for (int32_t idx = tid; idx < n; idx += blockDim.x) {
-        //     max_val = max(max_val, input[i * n + idx]);
-        // }
-        // __syncthreads();
-
-        // for (int32_t idx = tid; idx < n; idx += blockDim.x) {
-        //     dom_val += exp(input[i * n + idx] - max_val);
-        // }
-        // __syncthreads();
-
         blockcompute(output, max_val, dom_val);
 
         // Pass 2: Compute the softmax values
@@ -91,7 +77,7 @@ void softmax(torch::Tensor& input, torch::Tensor& output, const int m,
     assert(input.dim() == 2);
 
     dim3 grid(m);
-    dim3 block(std::min(n, 1024));
+    dim3 block(std::min(n / 32 * 32, 1024));
 
     const at::cuda::CUDAStream stream = at::cuda::getCurrentCUDAStream();
     online_softmax<float><<<grid, block, 0, stream>>>(

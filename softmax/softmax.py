@@ -52,10 +52,9 @@ def main():
     ext = compile_extension()
     torch.manual_seed(42)
     
-    m = 2
-    # FIX: n = 130, last two elements are inccorect
-    # n = 130
-    n = 128
+    m = 28
+    n = 725
+    # n = 128
     eps = 1e-6
     input = torch.randn(m, n, dtype=torch.float).cuda()
     output = torch.zeros_like(input)
@@ -63,13 +62,16 @@ def main():
     t1 = time.time()
     base_result = softmax_base_impl(input, m, n, eps)
     print(f"Base Impl Time Cost: {time.time()-t1}")
+
     t2 = time.time()
     ext.softmax(input, output, m, n, eps)
     print(f"Extension Time Cost: {time.time()-t2}")
-    print(f"input: {input}")
 
+    print(f"input: {input}")
     print(f"base result: {base_result}")
     print(f"output: {output}")
+    
+    assert torch.allclose(base_result, output, rtol=1e-3)
 
 
 
