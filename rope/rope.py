@@ -1,11 +1,13 @@
+import time
 from pathlib import Path
 import torch
-import time
 from torch.utils.cpp_extension import load_inline
 
 
 def compile_extension():
-    cuda_source = Path("/workspace/Custom-Kernel-Impl/rope/rope_kernel.cu").read_text()
+    cuda_source = Path("/workspace/Custom-Kernel-Impl/rope/rope_kernel.cu").read_text(
+        encoding="utf-8"
+    )
     cpp_source = (
         "void rope(torch::Tensor& data, torch::Tensor& sin, torch::Tensor& cos, "
         "const int32_t head_dim, const int32_t head_num, const int32_t token_num);"
@@ -77,7 +79,7 @@ def rope_base_impl(input_tensor, sin, cos, head_dim=128, head_num=32):
 
 def prepare_sin_cos(token_num, head_dim, rope_base=10000):
     freqs = torch.arange(0, head_dim // 2, dtype=torch.float32)
-    inv_freq = 1.0 / (10000 ** (freqs / head_dim))
+    inv_freq = 1.0 / (rope_base ** (freqs / head_dim))
     sinusoid_inp = torch.arange(0, token_num, dtype=torch.float32)[:, None] * inv_freq[None, :]
     return torch.sin(sinusoid_inp), torch.cos(sinusoid_inp)
 
@@ -95,7 +97,7 @@ def main():
     rope_base = 10000
 
     data = torch.randn(token_num, head_dim * head_num, dtype=torch.float16).cuda()
-    sin, cos = prepare_sin_cos(token_num, head_dim, rope_base=10000)
+    sin, cos = prepare_sin_cos(token_num, head_dim, rope_base=rope_base)
     sin, cos = sin.cuda().float(), cos.cuda().float()
 
     t1 = time.time()

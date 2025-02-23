@@ -6,7 +6,7 @@ from torch.utils.cpp_extension import load_inline
 def compile_extension():
     cuda_source = Path(
         "/content/drive/Othercomputers/MacBookPro/Custom-Kernel-Impl/matmul/matmul_kernel.cu"
-    ).read_text()
+    ).read_text(encoding="utf-8")
     cpp_source = "torch::Tensor matmul(torch::Tensor& m, torch::Tensor& n);"
 
     # Load the CUDA kernel as a PyTorch extension
@@ -21,11 +21,11 @@ def compile_extension():
     )
     return matmul_extension
 
-def matmul_base(A: torch.Tensor, B: torch.Tensor) -> torch.Tensor:
-    _, k1 = A.shape
-    k2, _ = B.shape
+def matmul_base(a: torch.Tensor, b: torch.Tensor) -> torch.Tensor:
+    _, k1 = a.shape
+    k2, _ = b.shape
     assert k1 == k2, "Mismatch Error: A and B can not multiplied"
-    output = A @ B
+    output = a @ b
     return output
 
 def main():

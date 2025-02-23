@@ -7,7 +7,7 @@ def compile_extension():
     cuda_source = Path(
         "/content/drive/Othercomputers/MacBookPro/Custom-Kernel-Impl/layernorm/"
         "layer_norm_kernel.cu"
-    ).read_text()
+    ).read_text(encoding="utf-8")
     cpp_source = (
         "void layer_norm(torch::Tensor& out, torch::Tensor& input, "
         "torch::Tensor& gamma, torch::Tensor& beta, "

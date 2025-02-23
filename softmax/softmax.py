@@ -5,7 +5,9 @@ from torch.utils.cpp_extension import load_inline
 
 
 def compile_extension():
-    cuda_source = Path("/workspace/Custom-Kernel-Impl/softmax/softmax_kernel.cu").read_text()
+    cuda_source = Path("/workspace/Custom-Kernel-Impl/softmax/softmax_kernel.cu").read_text(
+        encoding="utf-8"
+    )
     cpp_source = (
         "void softmax(torch::Tensor& input, torch::Tensor& output, const int m, const int n);"
     )
@@ -40,18 +42,18 @@ def main():
     m = 28
     n = 725
     # n = 128
-    input = torch.randn(m, n, dtype=torch.float).cuda()
-    output = torch.zeros_like(input)
+    inp = torch.randn(m, n, dtype=torch.float).cuda()
+    output = torch.zeros_like(inp)
 
     t1 = time.time()
-    base_result = softmax_base_impl(input, m, n)
+    base_result = softmax_base_impl(inp, m, n)
     print(f"Base Impl Time Cost: {time.time()-t1}")
 
     t2 = time.time()
-    ext.softmax(input, output, m, n)
+    ext.softmax(inp, output, m, n)
     print(f"Extension Time Cost: {time.time()-t2}")
 
-    print(f"input: {input}")
+    print(f"input: {inp}")
     print(f"base result: {base_result}")
     print(f"output: {output}")
 
