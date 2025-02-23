@@ -77,7 +77,7 @@ void softmax(torch::Tensor& input, torch::Tensor& output, const int m,
     assert(input.dim() == 2);
 
     dim3 grid(m);
-    dim3 block(std::min(n / 32 * 32, 1024));
+    dim3 block(std::min(std::max(1, n / 32) * 32, 1024));
 
     const at::cuda::CUDAStream stream = at::cuda::getCurrentCUDAStream();
     online_softmax<float><<<grid, block, 0, stream>>>(
