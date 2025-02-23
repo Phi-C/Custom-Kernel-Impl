@@ -5,9 +5,14 @@ from torch.utils.cpp_extension import load_inline
 
 def compile_extension():
     cuda_source = Path(
-        "/content/drive/Othercomputers/MacBookPro/Custom-Kernel-Impl/layernorm/layer_norm_kernel.cu"
+        "/content/drive/Othercomputers/MacBookPro/Custom-Kernel-Impl/layernorm/"
+        "layer_norm_kernel.cu"
     ).read_text()
-    cpp_source = "void layer_norm(torch::Tensor& out, torch::Tensor& input, torch::Tensor& gamma, torch::Tensor& beta, int num_tokens, int hidden_size, double epsilon);"
+    cpp_source = (
+        "void layer_norm(torch::Tensor& out, torch::Tensor& input, "
+        "torch::Tensor& gamma, torch::Tensor& beta, "
+        "int num_tokens, int hidden_size, double epsilon);"
+    )
 
     # Load the CUDA kernel as a PyTorch extension
     layer_norm_extension = load_inline(
@@ -20,6 +25,7 @@ def compile_extension():
         # build_directory='./cuda_build',
     )
     return layer_norm_extension
+
 
 def layer_norm_base(input_tensor, gamma, beta, eps=1e-5):
     """Layer Normalization Baseline Impl
@@ -44,6 +50,7 @@ def layer_norm_base(input_tensor, gamma, beta, eps=1e-5):
     output_tensor = gamma * normalized_tensor + beta
 
     return output_tensor
+
 
 def main():
     """

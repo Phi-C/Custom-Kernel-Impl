@@ -43,7 +43,8 @@ __device__ void blockcompute(float* output, float& max_val, float& dom_val) {
 
 template <typename dtype>
 __global__ void online_softmax(const dtype* input, dtype* output,
-                               const int32_t m, const int32_t n, float eps) {
+                               const int32_t m, const int32_t n,
+                               float eps = 1e-9) {
     int32_t tid = threadIdx.x;
     int32_t bid = blockIdx.x;
 
@@ -72,7 +73,7 @@ __global__ void online_softmax(const dtype* input, dtype* output,
 }
 
 void softmax(torch::Tensor& input, torch::Tensor& output, const int m,
-             const int n, const float eps) {
+             const int n) {
     assert(input.device().type() == torch::kCUDA);
     assert(input.dim() == 2);
 
@@ -81,7 +82,7 @@ void softmax(torch::Tensor& input, torch::Tensor& output, const int m,
 
     const at::cuda::CUDAStream stream = at::cuda::getCurrentCUDAStream();
     online_softmax<float><<<grid, block, 0, stream>>>(
-        input.data_ptr<float>(), output.data_ptr<float>(), m, n, eps);
+        input.data_ptr<float>(), output.data_ptr<float>(), m, n);
 
     C10_CUDA_KERNEL_LAUNCH_CHECK();
 }
